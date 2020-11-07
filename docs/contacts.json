@@ -1,0 +1,12 @@
+[
+    {
+        "name" : "John",
+        "surname" : "Doe",
+        "phone" : "0773 302 456"
+    },
+    {
+        "name" : "Jane",
+        "surname" : "Doe",
+        "phone" : "0773 302 457"
+    }
+]
