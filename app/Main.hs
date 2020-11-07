@@ -7,13 +7,14 @@ import Data.Aeson
 import Data.Time
 import Misc.Config
 import Misc.Menu
+import Control.Monad
 
 main :: IO ()
 main = do
     val <- readfile emptyCP "docs/config.cfg"
     let configParser = forceEither val
     greetUser configParser
-
+{-|
     d <- (eitherDecode <$> pathToString (getConfigPath  configParser "contacts_file")) :: IO (Either String [Contact])
     case d of
         Left err -> putStrLn err
@@ -23,4 +24,8 @@ main = do
     case r of
         Left err -> putStrLn err
         Right ps -> printAppointmentList ps
-    dummyMenu
+-}  
+    let loop = do 
+            eval <- welcomeMenu
+            when (eval == 0) loop
+    loop
