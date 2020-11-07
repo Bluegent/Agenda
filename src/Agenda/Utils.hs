@@ -1,4 +1,4 @@
-module AgendaUtils where
+module Agenda.Utils where
 
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B

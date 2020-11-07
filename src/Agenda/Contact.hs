@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module Contact where
+module Agenda.Contact where
 
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B
@@ -25,4 +25,4 @@ printContactList :: [Contact] -> IO()
 printContactList list =  do 
     putStrLn "Your Loaded contacts are:"
     forM_ list $ \s -> do
-        putStrLn $ name s ++ surname s
+        putStrLn $ name s ++" "++ surname s
