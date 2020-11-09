@@ -9,6 +9,7 @@ import Control.Applicative
 import Control.Monad
 import GHC.Generics
 import Data.Time
+import Agenda.Utils
 
 data Appointment =
   Appointment { name :: String
@@ -32,3 +33,13 @@ printAppointmentList list =  do
     putStrLn "Your appointments are:"
     forM_ list $ \s -> do
         putStrLn $ name s ++ " (" ++ show (parseDate (startDate s)) ++ ")"
+        
+        
+parseAppointments :: FilePath -> IO([Appointment])
+parseAppointments path = do
+    res <- (eitherDecode <$> pathToString path) :: IO (Either String [Appointment])
+    case res of
+        Left err -> do 
+            putStrLn err
+            return []
+        Right appts -> return appts

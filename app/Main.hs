@@ -25,6 +25,14 @@ main = do
         Left err -> putStrLn err
         Right ps -> printAppointmentList ps
 -}  
+
+
+    contacts <- parseContacts $ getConfigPath  configParser "contacts_file"
+    printContactList contacts
+    
+    appts <- parseAppointments $ getConfigPath  configParser "appointments_file"
+    printAppointmentList appts
+    
     let loop = do 
             eval <- welcomeMenu
             when (eval == 0) loop

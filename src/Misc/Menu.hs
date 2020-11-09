@@ -35,12 +35,14 @@ printTodayAppointments = do
     putStrLn "Your appointments are:"
     return 0
 
-
-invalidChoice :: (IO()) -> IO Int
-invalidChoice func = do
-    putStrLn("Invalid choice...")
-    return func
 -}
+invalidChoice :: (IO()) -> IO ()
+invalidChoice func = do
+    putStrLn ""
+    putStrLn "================Invalid choice================="
+    putStrLn ""
+    func
+
 
 
 printSeparator = putStrLn "==============================================="
@@ -58,7 +60,7 @@ searchContactMenu = do
         'n' -> do 
             putStrLn "This is where you would search if it worked..."
         'q' -> return ()
-        _ -> searchContactMenu
+        _ -> invalidChoice searchContactMenu
 
 welcomeMenu :: IO Int
 welcomeMenu = do
