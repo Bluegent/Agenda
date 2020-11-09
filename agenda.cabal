@@ -20,11 +20,11 @@ extra-source-files:  CHANGELOG.md
 library
   exposed-modules:     Agenda.Contact, Agenda.Utils, Agenda.Appointment, Misc.Config, Misc.Menu
   default-language:    Haskell2010
-  build-depends:       base >=4.14 && <4.15, aeson, text, bytestring, ConfigFile, MissingH, time
+  build-depends:       base >=4.14 && <4.15, aeson, text, bytestring, ConfigFile, directory, MissingH, time
   hs-source-dirs:   src
 
 executable agenda
   main-is:             Main.hs
   default-language:    Haskell2010
-  build-depends:       base >=4.14 && <4.15, aeson, text, bytestring, ConfigFile, MissingH, time, Agenda
+  build-depends:       base >=4.14 && <4.15, aeson, text, bytestring, ConfigFile, directory, MissingH, time, Agenda
   hs-source-dirs:   app
