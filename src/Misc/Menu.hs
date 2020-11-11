@@ -1,54 +1,34 @@
 module Misc.Menu where
 import Data.Time
 import Agenda.Utils
+import Agenda.Contact
+import Agenda.Appointment
 
-{-|
-searchContactByName :: int
-searchContactByName = do
-    putStr("Input name:")
-    line <- getLine
-    return 0
-    
-searchContactMenu :: int
-searchContactMenu = do
-    putStrLn "Search by what?"
-    putStrLn "[n]ame"
-    putStrLn "[p]hone"
-    putStrLn "[e]-mail"
-    putStrLn "[q]uit"
-    input <- getChar
-    case input of
-        'n' -> return searchContactByName
-        'p' -> return searchContactByName
-        'e' -> return searchContactByName
-        'q' -> return welcomeMenu
-        _   -> return searchContactMenu
-    return 1
+data Database = 
+    Database { ctcs     :: [Contact]
+             , appointments :: [Appointment]
+            }
 
-searchAppointmentMenu :: int
-searchAppointmentMenu = do
-    putStrLn "Search by what?"
-    return 0
-    
-printTodayAppointments :: int
-printTodayAppointments = do
-    putStrLn "Your appointments are:"
-    return 0
-
--}
-invalidChoice :: (IO()) -> IO ()
-invalidChoice func = do
+invalidChoice :: IO ()
+invalidChoice  = do
     putStrLn ""
     putStrLn "================Invalid choice================="
     putStrLn ""
-    func
+
 
 
 
 printSeparator = putStrLn "==============================================="
 
-searchContactMenu :: IO()
-searchContactMenu = do
+
+searchContactByFunc :: Database -> (Contact->String) -> IO()
+searchContactByFunc db func = do
+    line <- getLine
+    searchContactByString (ctcs db) func line
+    searchContactMenu db
+
+searchContactMenu :: Database -> IO()
+searchContactMenu db = do
     printSeparator
     putStrLn "Search by what?"
     putStrLn "[n]ame"
@@ -57,13 +37,22 @@ searchContactMenu = do
     putStrLn "[q]uit"
     input <- readChar
     case input of
-        'n' -> do 
-            putStrLn "This is where you would search if it worked..."
+        'n' -> do
+            putStrLn "Input name:" 
+            searchContactByFunc db Agenda.Contact.name
+        'p' -> do
+            putStrLn "Input phone:" 
+            searchContactByFunc db Agenda.Contact.phone
+        'e' -> do
+            putStrLn "Input e-mail:" 
+            searchContactByFunc db Agenda.Contact.email
         'q' -> return ()
-        _ -> invalidChoice searchContactMenu
+        _ -> do 
+            invalidChoice 
+            searchContactMenu db
 
-welcomeMenu :: IO Int
-welcomeMenu = do
+welcomeMenu :: Database -> IO Int
+welcomeMenu db = do
     printSeparator
     putStrLn "What would you like to do?"
     putStrLn "search [c]ontacts"
@@ -74,7 +63,7 @@ welcomeMenu = do
     line <- readChar
     case line of
         'c' -> do
-                searchContactMenu 
+                searchContactMenu db
                 return 0
 --        'a' -> return searchAppointmentMenu
 --        't' -> return searchContactMenu

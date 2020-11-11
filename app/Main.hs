@@ -10,8 +10,6 @@ import Misc.Menu
 import Control.Monad
 import Control.Exception
 
-
-
 main :: IO ()
 main = do
     let defaultCfgPath = "docs/config.cfg" 
@@ -25,7 +23,9 @@ main = do
     appts <- parseAppointments $ getConfigPath  cfgParser "appointments_file"
     printAppointmentList appts
     
+    let db = Database {ctcs = contacts , appointments = appts}
+    
     let loop = do 
-            eval <- welcomeMenu
+            eval <- welcomeMenu db
             when (eval == 0) loop
     loop
