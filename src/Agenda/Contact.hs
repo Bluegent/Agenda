@@ -60,3 +60,14 @@ searchContactByString :: [Contact] -> (Contact -> String) -> String -> IO()
 searchContactByString list func term = do 
     forM_ list $ \contact -> do
         printMatch func contact term
+        
+        
+readContact :: IO Contact
+readContact = do
+    putStr "Input name:"
+    nameStr <- getLine
+    putStr "Input phone number:"
+    phoneStr <- getLine
+    putStr "Input e-mail:"
+    mailStr <- getLine
+    return  Contact { name = nameStr, phone = phoneStr, email = mailStr}

@@ -9,9 +9,12 @@ import Misc.Config
 import Misc.Menu
 import Control.Monad
 import Control.Exception
+import System.IO
+
 
 main :: IO ()
 main = do
+    hSetBuffering stdout NoBuffering
     let defaultCfgPath = "docs/config.cfg" 
     
     cfgParser <- getCfgFromPath defaultCfgPath

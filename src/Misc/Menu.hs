@@ -5,18 +5,13 @@ import Agenda.Contact
 import Agenda.Appointment
 
 data Database = 
-    Database { ctcs     :: [Contact]
+    Database { ctcs         :: [Contact]
              , appointments :: [Appointment]
-            }
+             }
 
 invalidChoice :: IO ()
 invalidChoice  = do
-    putStrLn ""
-    putStrLn "================Invalid choice================="
-    putStrLn ""
-
-
-
+    putStrLn "\n================Invalid choice=================\n"
 
 printSeparator = putStrLn "==============================================="
 
@@ -24,27 +19,24 @@ printSeparator = putStrLn "==============================================="
 searchContactByFunc :: Database -> (Contact->String) -> IO()
 searchContactByFunc db func = do
     line <- getLine
+    putStrLn "\nResults:"
     searchContactByString (ctcs db) func line
     searchContactMenu db
 
 searchContactMenu :: Database -> IO()
 searchContactMenu db = do
     printSeparator
-    putStrLn "Search by what?"
-    putStrLn "[n]ame"
-    putStrLn "[p]hone"
-    putStrLn "[e]-mail"
-    putStrLn "[q]uit"
+    putStrLn "Search by what? - [n]ame [p]hone [e]-mail [q]uit"
     input <- readChar
     case input of
         'n' -> do
-            putStrLn "Input name:" 
+            putStr "Input name:" 
             searchContactByFunc db Agenda.Contact.name
         'p' -> do
-            putStrLn "Input phone:" 
+            putStr "Input phone:" 
             searchContactByFunc db Agenda.Contact.phone
         'e' -> do
-            putStrLn "Input e-mail:" 
+            putStr "Input e-mail:" 
             searchContactByFunc db Agenda.Contact.email
         'q' -> return ()
         _ -> do 
