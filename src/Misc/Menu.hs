@@ -43,21 +43,24 @@ searchContactMenu db = do
             invalidChoice 
             searchContactMenu db
 
-welcomeMenu :: Database -> IO Int
-welcomeMenu db = do
-    printSeparator
-    putStrLn "What would you like to do?"
-    putStrLn "search [c]ontacts"
-    putStrLn "search [a]ppointments"
-    putStrLn "[m]anage agenda"
-    putStrLn "[l]ist today's appointments"
-    putStrLn "[q]uit"
-    line <- readChar
-    case line of
-        'c' -> do
-                searchContactMenu db
-                return 0
---        'a' -> return searchAppointmentMenu
---        't' -> return searchContactMenu
-        'q' -> return 1
-        _ -> return 0
+menuLoop :: Database -> IO()
+menuLoop db = do
+    let loop = do 
+            printSeparator
+            putStrLn "What would you like to do?"
+            putStrLn "search [c]ontacts"
+            putStrLn "search [a]ppointments"
+            putStrLn "[m]anage agenda"
+            putStrLn "[l]ist today's appointments"
+            putStrLn "[q]uit"
+            line <- readChar
+            case line of
+                'c' -> do
+                        searchContactMenu db
+        --        'a' -> return searchAppointmentMenu
+        --        't' -> return searchContactMenu
+                'q' -> return ()
+                _ -> invalidChoice
+            loop
+    loop
+    

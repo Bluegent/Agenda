@@ -28,7 +28,4 @@ main = do
     
     let db = Database {ctcs = contacts , appointments = appts}
     
-    let loop = do 
-            eval <- welcomeMenu db
-            when (eval == 0) loop
-    loop
+    menuLoop db
