@@ -23,10 +23,8 @@ main = do
     greetUser cfgParser
 
     contacts <- parseContacts $ getConfigPath  cfgParser contactsPath
-    printContactList contacts
     
     appts <- parseAppointments $ getConfigPath  cfgParser appointmentsPath
-    printAppointmentList appts
     
     let db = Database {ctcs = contacts , appointments = appts}
     
