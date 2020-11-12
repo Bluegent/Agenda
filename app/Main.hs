@@ -12,6 +12,8 @@ import Control.Exception
 import System.IO
 
 
+
+
 main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
@@ -20,10 +22,10 @@ main = do
     cfgParser <- getCfgFromPath defaultCfgPath
     greetUser cfgParser
 
-    contacts <- parseContacts $ getConfigPath  cfgParser "contacts_file"
+    contacts <- parseContacts $ getConfigPath  cfgParser contactsPath
     printContactList contacts
     
-    appts <- parseAppointments $ getConfigPath  cfgParser "appointments_file"
+    appts <- parseAppointments $ getConfigPath  cfgParser appointmentsPath
     printAppointmentList appts
     
     let db = Database {ctcs = contacts , appointments = appts}

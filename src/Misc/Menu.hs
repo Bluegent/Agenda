@@ -3,6 +3,7 @@ import Data.Time
 import Agenda.Utils
 import Agenda.Contact
 import Agenda.Appointment
+import System.Exit
 
 data Database = 
     Database { ctcs         :: [Contact]
@@ -59,7 +60,7 @@ menuLoop db = do
                         searchContactMenu db
         --        'a' -> return searchAppointmentMenu
         --        't' -> return searchContactMenu
-                'q' -> return ()
+                'q' -> exitWith ExitSuccess
                 _ -> invalidChoice
             loop
     loop

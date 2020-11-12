@@ -4,14 +4,22 @@ import System.Directory
 import Data.Either.Utils
 import Data.ConfigFile
 
+
+
+contactsPath = "contacts_file"
+appointmentsPath = "appointments_file"
+pathsSection = "PATHS"
+userCallout = "callout"
+
+
 defaultCfg :: ConfigParser
 defaultCfg = forceEither $ do
     let cfg = emptyCP
-    cfg <- add_section cfg "PATHS"
-    cfg <- set cfg "PATHS" "contacts_file" "docs/contacts.json"
-    cfg <- set cfg "PATHS" "appointments_file" "docs/appointments.json"
+    cfg <- add_section cfg pathsSection
+    cfg <- set cfg pathsSection contactsPath "docs/contacts.json"
+    cfg <- set cfg pathsSection appointmentsPath "docs/appointments.json"
     cfg <- add_section cfg "MISC"
-    cfg <- set cfg "MISC" "callout" "User"
+    cfg <- set cfg "MISC" userCallout "User"
     return cfg
 
 
