@@ -10,9 +10,7 @@ data Database =
              , appointments :: [Appointment]
              }
 
-invalidChoice :: IO ()
-invalidChoice  = do
-    putStrLn "\n================Invalid choice=================\n"
+invalidChoice  = putStrLn "\n================Invalid choice=================\n"
 
 printSeparator = putStrLn "==============================================="
 
@@ -27,7 +25,7 @@ searchContactByFunc db func = do
 searchContactMenu :: Database -> IO()
 searchContactMenu db = do
     printSeparator
-    putStrLn "Search by what? - [n]ame [p]hone [e]-mail [q]uit"
+    putStrLn "Search by what? - [n]ame, [p]hone, [e]-mail, [q]uit"
     input <- readChar
     case input of
         'n' -> do
@@ -39,6 +37,34 @@ searchContactMenu db = do
         'e' -> do
             putStr "Input e-mail:" 
             searchContactByFunc db Agenda.Contact.email
+        'q' -> return ()
+        _ -> do 
+            invalidChoice 
+            searchContactMenu db
+
+searchAppointmentByFunc :: Database -> (Appointment->String) -> IO()
+searchAppointmentByFunc db func = do
+    line <- getLine
+    putStrLn "\nResults:"
+    searchApptByString (appointments db) func line
+    searchAppointmentMenu db
+
+searchAppointmentMenu :: Database -> IO()
+searchAppointmentMenu db = do
+    printSeparator
+    putStrLn "Search by what? - [n]ame, [d]etails, [e]xact date, [r]ange of dates, [q]uit"
+    input <- readChar
+    case input of
+        'n' -> do
+            putStr "Input name:" 
+            searchAppointmentByFunc db Agenda.Appointment.name
+        'd' -> do
+            putStr "Input details search term:" 
+            searchAppointmentByFunc db Agenda.Appointment.details
+        'e' -> do
+            putStrLn "Not supported yet" 
+        'r' -> do
+            putStrLn "Not supported yet" 
         'q' -> return ()
         _ -> do 
             invalidChoice 
@@ -56,10 +82,10 @@ menuLoop db = do
             putStrLn "[q]uit"
             line <- readChar
             case line of
-                'c' -> do
-                        searchContactMenu db
-        --        'a' -> return searchAppointmentMenu
-        --        't' -> return searchContactMenu
+                'c' -> searchContactMenu db
+                'a' -> searchAppointmentMenu db
+                'm' -> putStrLn "Not supported yet"
+                'l' -> putStrLn "Not supported yet"
                 'q' -> exitWith ExitSuccess
                 _ -> invalidChoice
             loop

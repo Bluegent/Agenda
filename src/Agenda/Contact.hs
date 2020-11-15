@@ -45,8 +45,6 @@ parseContacts path = do
         Right contacts -> return contacts
 
 
-lowerString = Prelude.map Data.Char.toLower
-
 printMatch :: (Contact -> String) -> Contact  ->  String -> IO()
 printMatch func contact term = do
     let termLower = lowerString term

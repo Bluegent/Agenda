@@ -3,6 +3,7 @@ module Agenda.Appointment where
 
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B
+import qualified Data.List as L
 import Data.Aeson
 import Data.Text
 import Control.Applicative
@@ -28,11 +29,15 @@ parseDate :: String -> LocalTime
 parseDate str = parseTimeOrError True defaultTimeLocale "%d/%m/%0Y %R" str :: LocalTime
 
 
+printAppointment :: Appointment -> IO()
+printAppointment appt = putStrLn $ name appt ++ " (" ++ show (parseDate (startDate appt)) ++" - "++ show (parseDate (endDate appt)) ++ ") - \"" ++ details appt ++ "\""  
+
+
 printAppointmentList :: [Appointment] -> IO()
 printAppointmentList list =  do 
     putStrLn "Your appointments are:"
     forM_ list $ \s -> do
-        putStrLn $ name s ++ " (" ++ show (parseDate (startDate s)) ++ ")"
+        printAppointment s
         
         
 parseAppointments :: FilePath -> IO([Appointment])
@@ -43,3 +48,18 @@ parseAppointments path = do
             putStrLn err
             return []
         Right appts -> return appts
+        
+        
+printMatch :: (Appointment -> String) -> Appointment  ->  String -> IO()
+printMatch func appt term = do
+    let termLower = lowerString term
+    let funcLower = lowerString (func appt)
+    if L.isInfixOf termLower funcLower
+        then printAppointment appt
+    else return ()
+
+
+searchApptByString :: [Appointment] -> (Appointment -> String) -> String -> IO()
+searchApptByString list func term = do 
+    forM_ list $ \contact -> do
+        printMatch func contact term
