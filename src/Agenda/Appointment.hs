@@ -63,3 +63,29 @@ searchApptByString :: [Appointment] -> (Appointment -> String) -> String -> IO()
 searchApptByString list func term = do 
     forM_ list $ \contact -> do
         printMatch func contact term
+
+
+
+parseDateMaybe ::  String -> Maybe LocalTime
+parseDateMaybe str = do
+    case ( parseTimeM True defaultTimeLocale "%d/%m/%0Y %R" str) :: Maybe LocalTime of 
+        Just x -> return x
+        Nothing -> do
+            case ( parseTimeM True defaultTimeLocale "%d/%m/%0Y" str) :: Maybe LocalTime of 
+                Just x -> return x
+                Nothing -> do
+                    case ( parseTimeM True defaultTimeLocale "%R" str) :: Maybe LocalTime of 
+                        Just x -> return x
+                        Nothing -> Nothing
+    
+        
+readDateFromKeyBoard :: IO ()
+readDateFromKeyBoard = do
+    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"mm/dd/yyyy\" or \"hh:mm\"."
+    putStr "Enter date:"
+    line <- getLine
+    case (parseDateMaybe line) :: Maybe LocalTime of 
+        Just time -> putStrLn $ show time
+        Nothing -> putStrLn "Invalid input."
+
+    

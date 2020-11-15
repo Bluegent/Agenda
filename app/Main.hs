@@ -19,6 +19,9 @@ main = do
     hSetBuffering stdout NoBuffering
     let defaultCfgPath = "docs/config.cfg" 
     
+    readDateFromKeyBoard
+
+    
     cfgParser <- getCfgFromPath defaultCfgPath
     greetUser cfgParser
 
