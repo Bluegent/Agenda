@@ -59,11 +59,24 @@ printMatch func appt term = do
     else return ()
 
 
+
 searchApptByString :: [Appointment] -> (Appointment -> String) -> String -> IO()
 searchApptByString list func term = do 
-    forM_ list $ \contact -> do
-        printMatch func contact term
+    forM_ list $ \appt -> do
+        printMatch func appt term
 
+
+printDateMatch :: Appointment -> LocalTime -> IO()
+printDateMatch appt time = do
+    let appTime = parseDate $ startDate appt
+    if appTime == time
+        then printAppointment appt
+    else return ()
+
+searchApptByExactDate :: [Appointment] -> LocalTime -> IO()
+searchApptByExactDate list time = do 
+    forM_ list $ \appt -> do
+        printDateMatch appt time
 
 
 parseDateMaybe ::  String -> Maybe LocalTime

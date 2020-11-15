@@ -49,6 +49,19 @@ searchAppointmentByFunc db func = do
     searchApptByString (appointments db) func line
     searchAppointmentMenu db
 
+
+
+searchAppointmentByExactDate :: Database -> IO()
+searchAppointmentByExactDate db = do
+    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"mm/dd/yyyy\" or \"hh:mm\"."
+    putStr "Enter date:"
+    line <- getLine
+    putStrLn "\nResults:"
+    case (parseDateMaybe line) :: Maybe LocalTime of 
+        Just time -> searchApptByExactDate  (appointments db) time
+        Nothing -> putStrLn "Invalid input."
+
+
 searchAppointmentMenu :: Database -> IO()
 searchAppointmentMenu db = do
     printSeparator
@@ -62,7 +75,7 @@ searchAppointmentMenu db = do
             putStr "Input details search term:" 
             searchAppointmentByFunc db Agenda.Appointment.details
         'e' -> do
-            putStrLn "Not supported yet" 
+            searchAppointmentByExactDate db
         'r' -> do
             putStrLn "Not supported yet" 
         'q' -> return ()
