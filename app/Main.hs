@@ -14,13 +14,32 @@ import System.IO
 
 
 
+localToUtc :: LocalTime -> IO UTCTime
+localToUtc local = do
+    timeZone <- getCurrentTimeZone
+    return $ localTimeToUTC timeZone local
+
+zonedToUtc :: ZonedTime -> UTCTime
+zonedToUtc zoned = localTimeToUTC (zonedTimeZone zoned) (zonedTimeToLocalTime zoned)
+    
+utcToZoned :: UTCTime -> IO ZonedTime
+utcToZoned utc = do
+    timeZone <- getCurrentTimeZone
+    let localTime = utcToLocalTime timeZone utc 
+    return ZonedTime {zonedTimeToLocalTime = localTime, zonedTimeZone = timeZone}
+    
 main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
     let defaultCfgPath = "docs/config.cfg" 
     
-    readDateFromKeyBoard
-
+    case ( parseTimeM True defaultTimeLocale "%R" "13:20") :: Maybe LocalTime of 
+        Just x -> do
+            localTime <- localToUtc x
+            putStrLn $ show localTime
+            
+        Nothing -> return ()
+    
     
     cfgParser <- getCfgFromPath defaultCfgPath
     greetUser cfgParser
@@ -31,4 +50,5 @@ main = do
     
     let db = Database {ctcs = contacts , appointments = appts}
     
-    menuLoop db
+--    menuLoop db
+    putStrLn "Goodbye"

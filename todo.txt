@@ -1,0 +1,4 @@
+> validate input jsons
+> manage contacts
+> manage appointments
+> search appointment by date range
