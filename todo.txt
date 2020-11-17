@@ -1,4 +1,9 @@
+to do:
 > validate input jsons
 > manage contacts
 > manage appointments
 > search appointment by date range
+
+
+done:
+>rework appointments to use UTCTime

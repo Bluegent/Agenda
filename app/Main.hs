@@ -16,7 +16,7 @@ main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
     let defaultCfgPath = "docs/config.cfg" 
-    
+         
     cfgParser <- getCfgFromPath defaultCfgPath
     greetUser cfgParser
     

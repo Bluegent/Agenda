@@ -58,7 +58,9 @@ searchAppointmentByExactDate db = do
     line <- getLine
     putStrLn "\nResults:"
     case (parseDateMaybe line) :: Maybe LocalTime of 
-        Just time -> searchApptByExactDate  (appointments db) time
+        Just time -> do
+            utcTime <- localToUtc time
+            searchApptByExactDate  (appointments db) utcTime
         Nothing -> putStrLn "Invalid input."
 
 

@@ -32,6 +32,9 @@ utcToZoned utc = do
     localTime <- utcToLocal utc
     return ZonedTime {zonedTimeToLocalTime = localTime, zonedTimeZone = timeZone}
 
+dateIsInRange :: UTCTime -> UTCTime -> UTCTime -> Bool
+dateIsInRange date start end = date > start && date < end 
+
 
 data Appointment =
   Appointment { name :: String
@@ -90,14 +93,14 @@ searchApptByString list func term = do
         printMatch func appt term
 
 
-printDateMatch :: Appointment -> LocalTime -> IO()
+printDateMatch :: Appointment -> UTCTime -> IO()
 printDateMatch appt time = do
     let appTime = time
     if appTime == time
         then printAppointment appt
     else return ()
 
-searchApptByExactDate :: [Appointment] -> LocalTime -> IO()
+searchApptByExactDate :: [Appointment] -> UTCTime -> IO()
 searchApptByExactDate list time = do 
     forM_ list $ \appt -> do
         printDateMatch appt time
