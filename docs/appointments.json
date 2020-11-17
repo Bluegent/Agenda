@@ -1,12 +1,1 @@
-[
-{"name":"Christmas holiday",
-"startDate":"21/12/2020 00:00",
-"endDate":"05/01/2021 00:00",
-"details":"Merry Christmas!"
-},
-{"name":"Easter holiday",
-"startDate":"04/04/2021 00:00",
-"endDate":"14/04/2021 00:00",
-"details":"Happy Easter!"
-}
-]
+[{"endDate":"2021-01-07T22:00:00Z","startDate":"2020-12-20T22:00:00Z","name":"christmas holiday","details":"Merry Christmas!"}]

@@ -12,10 +12,31 @@ import GHC.Generics
 import Data.Time
 import Agenda.Utils
 
+
+localToUtc :: LocalTime -> IO UTCTime
+localToUtc local = do
+    timeZone <- getCurrentTimeZone
+    return $ localTimeToUTC timeZone local
+
+zonedToUtc :: ZonedTime -> UTCTime
+zonedToUtc zoned = localTimeToUTC (zonedTimeZone zoned) (zonedTimeToLocalTime zoned)
+
+utcToLocal :: UTCTime -> IO LocalTime
+utcToLocal utc = do
+    timeZone <- getCurrentTimeZone
+    return $ utcToLocalTime timeZone utc 
+
+utcToZoned :: UTCTime -> IO ZonedTime
+utcToZoned utc = do
+    timeZone <- getCurrentTimeZone
+    localTime <- utcToLocal utc
+    return ZonedTime {zonedTimeToLocalTime = localTime, zonedTimeZone = timeZone}
+
+
 data Appointment =
   Appointment { name :: String
-        , startDate :: String
-        , endDate :: String
+        , startDate :: UTCTime
+        , endDate :: UTCTime
         , details :: String
         } deriving (Show,Generic)
 
@@ -30,7 +51,10 @@ parseDate str = parseTimeOrError True defaultTimeLocale "%d/%m/%0Y %R" str :: Lo
 
 
 printAppointment :: Appointment -> IO()
-printAppointment appt = putStrLn $ name appt ++ " (" ++ show (parseDate (startDate appt)) ++" - "++ show (parseDate (endDate appt)) ++ ") - \"" ++ details appt ++ "\""  
+printAppointment appt = do
+    localStart <- utcToLocal (startDate appt)
+    localEnd <- utcToLocal (endDate appt) 
+    putStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
 
 
 printAppointmentList :: [Appointment] -> IO()
@@ -68,7 +92,7 @@ searchApptByString list func term = do
 
 printDateMatch :: Appointment -> LocalTime -> IO()
 printDateMatch appt time = do
-    let appTime = parseDate $ startDate appt
+    let appTime = time
     if appTime == time
         then printAppointment appt
     else return ()
