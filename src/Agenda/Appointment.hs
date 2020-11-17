@@ -103,7 +103,10 @@ searchApptByExactDate :: [Appointment] -> UTCTime -> IO()
 searchApptByExactDate list time = do 
     forM_ list $ \appt -> do
         printDateMatch appt time
-
+        
+getFirst (a,_,_) = a
+getSecond (_,a,_) = a
+getThird (_,_,a) = a
 
 parseDateMaybe ::  String -> LocalTime -> Maybe LocalTime
 parseDateMaybe str baseDate = do
@@ -118,7 +121,15 @@ parseDateMaybe str baseDate = do
                             let day = localDay baseDate
                             let localWithHour = LocalTime {localDay = day, localTimeOfDay = x}
                             return localWithHour
-                        Nothing -> Nothing
+                        Nothing -> do
+                            case ( parseTimeM True defaultTimeLocale "%d/%m" str) :: Maybe Day of 
+                                Just x -> do
+                                    let yearGreg = getFirst (toGregorian (localDay baseDate))
+                                    let dayGreg = toGregorian x
+                                    let day = fromGregorian yearGreg (getSecond dayGreg) (getThird dayGreg)
+                                    let localWithYear = LocalTime {localDay = day, localTimeOfDay = midnight}
+                                    return localWithYear
+                                Nothing -> Nothing
     
 
     
