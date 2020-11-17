@@ -72,7 +72,7 @@ parseAppointments path = do
     res <- (eitherDecode <$> pathToString path) :: IO (Either String [Appointment])
     case res of
         Left err -> do 
-            putStrLn err
+            putStrLn $ "Error while parsing appointments:\"" ++ err ++"\""
             return []
         Right appts -> return appts
         

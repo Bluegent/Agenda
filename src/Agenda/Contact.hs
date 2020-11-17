@@ -40,7 +40,7 @@ parseContacts path = do
     res <- (eitherDecode <$> pathToString path) :: IO (Either String [Contact])
     case res of
         Left err -> do
-            putStrLn err
+            putStrLn $ "Error while parsing contacts:\"" ++ err ++"\""
             return []
         Right contacts -> return contacts
 
