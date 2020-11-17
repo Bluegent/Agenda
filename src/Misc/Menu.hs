@@ -53,12 +53,15 @@ searchAppointmentByFunc db func = do
 
 searchAppointmentByExactDate :: Database -> IO()
 searchAppointmentByExactDate db = do
-    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"mm/dd/yyyy\" or \"hh:mm\"."
+    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"mm/dd/yyyy\" or \"hh:mm\"(will use current date)."
     putStr "Enter date:"
     line <- getLine
     putStrLn "\nResults:"
-    case (parseDateMaybe line) :: Maybe LocalTime of 
+    current <- getCurrentTime
+    baseDate <- utcToLocal current
+    case (parseDateMaybe line baseDate) :: Maybe LocalTime of 
         Just time -> do
+            putStrLn $ "Searching for appointments that contain " ++ show time
             utcTime <- localToUtc time
             searchApptByExactDate  (appointments db) utcTime
         Nothing -> putStrLn "Invalid input."
@@ -83,7 +86,7 @@ searchAppointmentMenu db = do
         'q' -> return ()
         _ -> do 
             invalidChoice 
-            searchContactMenu db
+            searchAppointmentMenu db
 
 menuLoop :: Database -> IO()
 menuLoop db = do

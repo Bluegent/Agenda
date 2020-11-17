@@ -95,8 +95,7 @@ searchApptByString list func term = do
 
 printDateMatch :: Appointment -> UTCTime -> IO()
 printDateMatch appt time = do
-    let appTime = time
-    if appTime == time
+    if startDate appt == time || endDate appt == time
         then printAppointment appt
     else return ()
 
@@ -106,26 +105,20 @@ searchApptByExactDate list time = do
         printDateMatch appt time
 
 
-parseDateMaybe ::  String -> Maybe LocalTime
-parseDateMaybe str = do
+parseDateMaybe ::  String -> LocalTime -> Maybe LocalTime
+parseDateMaybe str baseDate = do
     case ( parseTimeM True defaultTimeLocale "%d/%m/%0Y %R" str) :: Maybe LocalTime of 
         Just x -> return x
         Nothing -> do
             case ( parseTimeM True defaultTimeLocale "%d/%m/%0Y" str) :: Maybe LocalTime of 
                 Just x -> return x
                 Nothing -> do
-                    case ( parseTimeM True defaultTimeLocale "%R" str) :: Maybe LocalTime of 
-                        Just x -> return x
+                    case ( parseTimeM True defaultTimeLocale "%R" str) :: Maybe TimeOfDay of 
+                        Just x -> do
+                            let day = localDay baseDate
+                            let localWithHour = LocalTime {localDay = day, localTimeOfDay = x}
+                            return localWithHour
                         Nothing -> Nothing
     
-        
-readDateFromKeyBoard :: IO ()
-readDateFromKeyBoard = do
-    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"mm/dd/yyyy\" or \"hh:mm\"."
-    putStr "Enter date:"
-    line <- getLine
-    case (parseDateMaybe line) :: Maybe LocalTime of 
-        Just time -> putStrLn $ show time
-        Nothing -> putStrLn "Invalid input."
 
     
