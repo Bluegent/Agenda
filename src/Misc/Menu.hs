@@ -49,8 +49,6 @@ searchAppointmentByFunc db func = do
     searchApptByString (appointments db) func line
     searchAppointmentMenu db
 
-
-
 searchAppointmentByExactDate :: Database -> IO()
 searchAppointmentByExactDate db = do
     putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"dd/mm/yyyy\" or \"dd/mm\"(will use current year) or \"hh:mm\"(will use current date)."
@@ -64,6 +62,27 @@ searchAppointmentByExactDate db = do
             putStrLn $ "Searching for appointments that contain date " ++ show time
             utcTime <- localToUtc time
             searchApptByExactDate  (appointments db) utcTime
+        Nothing -> putStrLn "Invalid input."
+
+searchAppointmentByDateRange :: Database -> IO()
+searchAppointmentByDateRange db = do
+    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"dd/mm/yyyy\" or \"dd/mm\"(will use current year) or \"hh:mm\"(will use current date)."
+    putStr "Enter start date:"
+    startLine <- getLine
+    current <- getCurrentTime
+    baseDate <- utcToLocal current
+    case (parseDateMaybe startLine baseDate) :: Maybe LocalTime of 
+        Just startTime -> do
+            putStr "Enter end date:"
+            endLine <- getLine
+            case (parseDateMaybe endLine baseDate) :: Maybe LocalTime of 
+                Just endTime -> do
+                    putStrLn $ "Searching for appointments between " ++ show startTime ++" and " ++ show endTime
+                    putStrLn "\nResults:"
+                    startUtc <- localToUtc startTime
+                    endUtc <- localToUtc endTime
+                    searchApptByDateRange  (appointments db) startUtc endUtc
+                Nothing -> putStrLn "Invalid input."
         Nothing -> putStrLn "Invalid input."
 
 
@@ -82,11 +101,19 @@ searchAppointmentMenu db = do
         'e' -> do
             searchAppointmentByExactDate db
         'r' -> do
-            putStrLn "Not supported yet" 
+            searchAppointmentByDateRange db
         'q' -> return ()
         _ -> do 
             invalidChoice 
             searchAppointmentMenu db
+
+printToday :: [Appointment] -> IO()
+printToday list = do
+    putStrLn "\nToday's appointments:"
+    current <- getCurrentTime
+    let start = UTCTime {utctDay = utctDay current, utctDayTime = secondsToDiffTime 0}
+    let end = addUTCTime nominalDay start
+    searchApptByDateRange list start end
 
 menuLoop :: Database -> IO()
 menuLoop db = do
@@ -103,7 +130,7 @@ menuLoop db = do
                 'c' -> searchContactMenu db
                 'a' -> searchAppointmentMenu db
                 'm' -> putStrLn "Not supported yet"
-                'l' -> putStrLn "Not supported yet"
+                'l' -> printToday (appointments db)
                 'q' -> exitWith ExitSuccess
                 _ -> invalidChoice
             loop

@@ -33,7 +33,7 @@ utcToZoned utc = do
     return ZonedTime {zonedTimeToLocalTime = localTime, zonedTimeZone = timeZone}
 
 dateIsInRange :: UTCTime -> UTCTime -> UTCTime -> Bool
-dateIsInRange date start end = date > start && date < end 
+dateIsInRange date start end = date >= start && date <= end 
 
 
 data Appointment =
@@ -91,6 +91,19 @@ searchApptByString :: [Appointment] -> (Appointment -> String) -> String -> IO()
 searchApptByString list func term = do 
     forM_ list $ \appt -> do
         printMatch func appt term
+
+printRangeMatch :: Appointment -> UTCTime -> UTCTime -> IO()
+printRangeMatch appt start end = do
+    if dateIsInRange (startDate appt) start end
+        then printAppointment appt
+    else return ()
+
+
+searchApptByDateRange :: [Appointment] -> UTCTime -> UTCTime -> IO()
+searchApptByDateRange list start end = do
+    forM_ list $ \appt -> do
+        printRangeMatch appt start end
+
 
 
 printDateMatch :: Appointment -> UTCTime -> IO()
