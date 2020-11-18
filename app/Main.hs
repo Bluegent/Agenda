@@ -11,6 +11,7 @@ import Control.Monad
 import Control.Exception
 import System.IO
 import Data.Typeable
+import Data.Vector
 
 parseContactsWithEx :: FilePath -> IO [Contact]
 parseContactsWithEx path = do
@@ -42,7 +43,7 @@ main = do
     parsedContacts <- parseContactsWithEx $ getConfigPath  cfgParser contactsPath
     parsedAppts <- parseAppointmentsWithEx $ getConfigPath  cfgParser appointmentsPath
     
-    let db = Database {contacts = parsedContacts , appointments = parsedAppts , cfg = cfgParser}
+    let db = Database {contacts = fromList parsedContacts , appointments = fromList parsedAppts , cfg = cfgParser}
     
     menuLoop db
     putStrLn "Goodbye"

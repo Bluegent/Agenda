@@ -4,6 +4,7 @@ module Agenda.Contact where
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B
 import qualified Data.List as L
+import qualified Data.Vector as V
 import Data.Aeson
 import Data.Text
 import Control.Applicative
@@ -11,6 +12,7 @@ import Control.Monad
 import GHC.Generics
 import Agenda.Utils
 import Data.Char
+
 
 data Contact =
   Contact { name     :: String
@@ -21,7 +23,7 @@ data Contact =
 instance FromJSON Contact
 instance ToJSON Contact
 
-writeContactList :: FilePath -> [Contact] -> IO()
+writeContactList :: FilePath -> V.Vector Contact -> IO()
 writeContactList path people = B.writeFile path (encode people)
 
 
@@ -50,11 +52,13 @@ printMatch func contact term = do
     let termLower = lowerString term
     let funcLower = lowerString (func contact)
     if L.isInfixOf termLower funcLower
-        then printContact contact
+        then do
+            printContact contact
+            
     else return ()
 
 
-searchContactByString :: [Contact] -> (Contact -> String) -> String -> IO()
+searchContactByString :: V.Vector Contact -> (Contact -> String) -> String -> IO()
 searchContactByString list func term = do 
     forM_ list $ \contact -> do
         printMatch func contact term

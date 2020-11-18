@@ -6,10 +6,11 @@ import Agenda.Appointment
 import System.Exit
 import Misc.Config
 import Data.ConfigFile
+import qualified Data.Vector as V
 
 data Database = 
-    Database { contacts     :: [Contact]
-             , appointments :: [Appointment]
+    Database { contacts     :: V.Vector Contact
+             , appointments :: V.Vector Appointment
              , cfg          :: ConfigParser
              }
 
@@ -110,7 +111,7 @@ searchAppointmentMenu db = do
             invalidChoice 
             searchAppointmentMenu db
 
-printToday :: [Appointment] -> IO()
+printToday :: V.Vector Appointment -> IO()
 printToday list = do
     putStrLn "\nToday's appointments:"
     current <- getCurrentTime
@@ -119,12 +120,12 @@ printToday list = do
     searchApptByDateRange list start end
 
 
-addContactMenu :: [Contact] -> IO [Contact]
+addContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
 addContactMenu contacts = do
     contact <- readContact
-    return (contacts ++ [contact])
+    return $ V.snoc contacts contact
 
-manageContactsMenu :: [Contact] -> IO [Contact]
+manageContactsMenu :: V.Vector Contact -> IO (V.Vector Contact)
 manageContactsMenu contacts = do
     printSeparator
     putStrLn "[a]dd contact"

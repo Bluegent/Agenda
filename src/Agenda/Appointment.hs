@@ -4,6 +4,7 @@ module Agenda.Appointment where
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B
 import qualified Data.List as L
+import qualified Data.Vector as V
 import Data.Aeson
 import Data.Text
 import Control.Applicative
@@ -46,7 +47,7 @@ data Appointment =
 instance FromJSON Appointment
 instance ToJSON Appointment
 
-writeAppointmentList :: FilePath  -> [Appointment] -> IO()
+writeAppointmentList :: FilePath  -> V.Vector Appointment -> IO()
 writeAppointmentList path appts = B.writeFile path (encode appts)
 
 parseDate :: String -> LocalTime
@@ -60,7 +61,7 @@ printAppointment appt = do
     putStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
 
 
-printAppointmentList :: [Appointment] -> IO()
+printAppointmentList :: V.Vector Appointment -> IO()
 printAppointmentList list =  do 
     putStrLn "Your appointments are:"
     forM_ list $ \s -> do
@@ -87,7 +88,7 @@ printMatch func appt term = do
 
 
 
-searchApptByString :: [Appointment] -> (Appointment -> String) -> String -> IO()
+searchApptByString :: V.Vector Appointment -> (Appointment -> String) -> String -> IO()
 searchApptByString list func term = do 
     forM_ list $ \appt -> do
         printMatch func appt term
@@ -99,7 +100,7 @@ printRangeMatch appt start end = do
     else return ()
 
 
-searchApptByDateRange :: [Appointment] -> UTCTime -> UTCTime -> IO()
+searchApptByDateRange :: V.Vector Appointment -> UTCTime -> UTCTime -> IO()
 searchApptByDateRange list start end = do
     forM_ list $ \appt -> do
         printRangeMatch appt start end
@@ -112,7 +113,7 @@ printDateMatch appt time = do
         then printAppointment appt
     else return ()
 
-searchApptByExactDate :: [Appointment] -> UTCTime -> IO()
+searchApptByExactDate :: V.Vector Appointment -> UTCTime -> IO()
 searchApptByExactDate list time = do 
     forM_ list $ \appt -> do
         printDateMatch appt time
