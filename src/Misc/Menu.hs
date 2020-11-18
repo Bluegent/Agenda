@@ -144,14 +144,64 @@ removeContactMenu contacts = do
         putStrLn "Invalid input."
         removeContactMenu contacts
 
+editContact :: Contact -> IO Contact
+editContact contact = do
+    putStr $ "Editing contact:" 
+    printContact contact
+    putStrLn "Edit options: edit [n]ame, edit [p]hone, edit [e]-mail, [d]one"
+    input <- readChar
+    case input of
+        'n' -> do
+            putStr "Input new name:"
+            line <- getLine
+            let newContact = Contact { Agenda.Contact.name = line, phone = phone contact, email = email contact}
+            editContact newContact
+        'p' -> do
+            putStr "Input new phone:"
+            line <- getLine
+            let newContact = Contact { Agenda.Contact.name = Agenda.Contact.name contact, phone = line, email = email contact}
+            editContact newContact   
+        'e' -> do
+            putStr "Input new e-mail:"
+            line <- getLine
+            let newContact = Contact { Agenda.Contact.name = Agenda.Contact.name contact, phone = phone contact, email =  line}
+            editContact newContact
+        'd' -> return contact
+        _ -> do 
+            invalidChoice
+            editContact contact
+
+
+
+editContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
+editContactMenu contacts = do
+    putStr "Input the index of the contact you would like to edit:"
+    line <- getLine
+    if isValidInt line then do
+        let num = stringToInt line
+        if num >= 0 && num < V.length contacts then do 
+            newContact <- editContact $ contacts V.! num
+            let firstHalf = V.snoc (V.take num contacts :: V.Vector Contact) newContact
+            let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
+            let combined = firstHalf V.++ lastHalf
+            return combined
+            else do
+                putStrLn "Invalid input."
+                editContactMenu contacts
+    else do
+        putStrLn "Invalid input."
+        editContactMenu contacts
+
+
 manageContactsMenu :: V.Vector Contact -> IO (V.Vector Contact)
 manageContactsMenu contacts = do
     printSeparator
     putStrLn "Manage contacts: [a]dd contact, [r]emove contact, [e]dit contact , [q]uit"
     line <- readChar
     case line of
-        'a' -> addContactMenu contacts     
-        'r' -> removeContactMenu contacts     
+        'a' -> addContactMenu contacts  
+        'r' -> removeContactMenu contacts
+        'e' -> editContactMenu contacts
         'q' -> return contacts
         _ -> do 
             invalidChoice 
