@@ -47,21 +47,23 @@ parseContacts path = do
         Right contacts -> return contacts
 
 
-printMatch :: (Contact -> String) -> Contact  ->  String -> IO()
-printMatch func contact term = do
+printMatch :: (Contact -> String) -> Int -> Contact  ->  String -> IO()
+printMatch func index contact term = do
     let termLower = lowerString term
     let funcLower = lowerString (func contact)
     if L.isInfixOf termLower funcLower
         then do
+            putStr $ "[id:" ++ show index ++ "]"
             printContact contact
             
     else return ()
 
 
 searchContactByString :: V.Vector Contact -> (Contact -> String) -> String -> IO()
-searchContactByString list func term = do 
-    forM_ list $ \contact -> do
-        printMatch func contact term
+searchContactByString list func term = do
+
+    let map = \ index contact -> printMatch func index contact term
+    V.imapM_ map list
         
         
 readContact :: IO Contact
