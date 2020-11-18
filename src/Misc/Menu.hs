@@ -4,10 +4,13 @@ import Agenda.Utils
 import Agenda.Contact
 import Agenda.Appointment
 import System.Exit
+import Misc.Config
+import Data.ConfigFile
 
 data Database = 
-    Database { ctcs         :: [Contact]
+    Database { contacts     :: [Contact]
              , appointments :: [Appointment]
+             , cfg          :: ConfigParser
              }
 
 invalidChoice  = putStrLn "\n================Invalid choice=================\n"
@@ -19,7 +22,7 @@ searchContactByFunc :: Database -> (Contact->String) -> IO()
 searchContactByFunc db func = do
     line <- getLine
     putStrLn "\nResults:"
-    searchContactByString (ctcs db) func line
+    searchContactByString (contacts db) func line
     searchContactMenu db
 
 searchContactMenu :: Database -> IO()
@@ -115,24 +118,76 @@ printToday list = do
     let end = addUTCTime nominalDay start
     searchApptByDateRange list start end
 
+
+addContactMenu :: [Contact] -> IO [Contact]
+addContactMenu contacts = do
+    contact <- readContact
+    return (contacts ++ [contact])
+
+manageContactsMenu :: [Contact] -> IO [Contact]
+manageContactsMenu contacts = do
+    printSeparator
+    putStrLn "[a]dd contact"
+    putStrLn "[r]emove contact"
+    putStrLn "[e]dit contact"
+    putStrLn "[q]uit"
+    line <- readChar
+    case line of
+        'a' -> addContactMenu contacts     
+        'q' -> return contacts
+        _ -> do 
+            invalidChoice 
+            manageContactsMenu contacts
+
+manageMenu :: Database -> IO Database
+manageMenu db = do
+    printSeparator
+    putStrLn "[c]ontacts"
+    putStrLn "[a]ppointments"
+    putStrLn "[s]save agenda"
+    putStrLn "[q]uit"
+    line <- readChar
+    case line of
+        'c' -> do
+            newContacts <- manageContactsMenu $ contacts db
+            manageMenu Database { contacts = newContacts , appointments = appointments db, cfg = cfg db}
+        's' -> do
+            let ctcPath = getConfigPath (cfg db) contactsPath
+            let apptPath = getConfigPath  (cfg db) appointmentsPath
+            
+            writeContactList ctcPath (contacts db)
+            writeAppointmentList apptPath (appointments db)
+            return db
+        'q' -> return db
+        _ -> do 
+            invalidChoice 
+            manageMenu db
+        
 menuLoop :: Database -> IO()
 menuLoop db = do
-    let loop = do 
-            printSeparator
-            putStrLn "What would you like to do?"
-            putStrLn "search [c]ontacts"
-            putStrLn "search [a]ppointments"
-            putStrLn "[m]anage agenda"
-            putStrLn "[l]ist today's appointments"
-            putStrLn "[q]uit"
-            line <- readChar
-            case line of
-                'c' -> searchContactMenu db
-                'a' -> searchAppointmentMenu db
-                'm' -> putStrLn "Not supported yet"
-                'l' -> printToday (appointments db)
-                'q' -> exitWith ExitSuccess
-                _ -> invalidChoice
-            loop
-    loop
+    printSeparator
+    putStrLn "What would you like to do?"
+    putStrLn "search [c]ontacts"
+    putStrLn "search [a]ppointments"
+    putStrLn "[m]anage agenda"
+    putStrLn "[l]ist today's appointments"
+    putStrLn "[q]uit"
+    line <- readChar
+    case line of
+        'c' -> do 
+            searchContactMenu db
+            menuLoop db
+        'a' -> do 
+            searchAppointmentMenu db
+            menuLoop db
+        'm' -> do
+            newDb <- manageMenu db
+            menuLoop newDb
+        'l' -> do 
+            printToday (appointments db)
+            menuLoop db
+        'q' -> exitWith ExitSuccess
+        _ -> do
+            invalidChoice
+            menuLoop db
     

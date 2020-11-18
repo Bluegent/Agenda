@@ -42,7 +42,7 @@ main = do
     parsedContacts <- parseContactsWithEx $ getConfigPath  cfgParser contactsPath
     parsedAppts <- parseAppointmentsWithEx $ getConfigPath  cfgParser appointmentsPath
     
-    let db = Database {ctcs = parsedContacts , appointments = parsedAppts}
+    let db = Database {contacts = parsedContacts , appointments = parsedAppts , cfg = cfgParser}
     
     menuLoop db
     putStrLn "Goodbye"

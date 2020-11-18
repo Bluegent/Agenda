@@ -1,12 +1,1 @@
-[
-    {
-        "name" : "John Doe",
-        "phone" : "0773 302 456",
-        "email" : "john.doe@aol.com"
-    },
-    {
-        "name" : "Jane Smith",
-        "phone" : "0773 302 457",
-        "email" : "janejane45@aol.com"
-    }
-]
+[{"email":"john.doe@aol.com","phone":"0773 302 456","name":"John Doe"},{"email":"janejane45@aol.com","phone":"0773 302 457","name":"Jane Smith"},{"email":"ionita.alexandru@gmail.com","phone":"0775 302 302","name":"Ionita Alexandru"},{"email":"test","phone":"test","name":"test"}]
