@@ -125,16 +125,33 @@ addContactMenu contacts = do
     contact <- readContact
     return $ V.snoc contacts contact
 
+removeContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
+removeContactMenu contacts = do
+    putStr "Input the index of the contact you would like to remove:"
+    line <- getLine
+    if isValidInt line then do
+        let num = stringToInt line
+        if num >= 0 && num < V.length contacts then do 
+            putStrLn $ "Removing contact with index " ++ show num
+            let firstHalf = V.take num contacts :: V.Vector Contact
+            let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
+            let combined = firstHalf V.++ lastHalf
+            return combined
+            else do
+                putStrLn "Invalid input."
+                removeContactMenu contacts
+    else do
+        putStrLn "Invalid input."
+        removeContactMenu contacts
+
 manageContactsMenu :: V.Vector Contact -> IO (V.Vector Contact)
 manageContactsMenu contacts = do
     printSeparator
-    putStrLn "[a]dd contact"
-    putStrLn "[r]emove contact"
-    putStrLn "[e]dit contact"
-    putStrLn "[q]uit"
+    putStrLn "Manage contacts: [a]dd contact, [r]emove contact, [e]dit contact , [q]uit"
     line <- readChar
     case line of
         'a' -> addContactMenu contacts     
+        'r' -> removeContactMenu contacts     
         'q' -> return contacts
         _ -> do 
             invalidChoice 
@@ -143,10 +160,7 @@ manageContactsMenu contacts = do
 manageMenu :: Database -> IO Database
 manageMenu db = do
     printSeparator
-    putStrLn "[c]ontacts"
-    putStrLn "[a]ppointments"
-    putStrLn "[s]save agenda"
-    putStrLn "[q]uit"
+    putStrLn "Manage Agenda: [c]ontacts, [a]ppointments, [s]ave to file, [q]uit"
     line <- readChar
     case line of
         'c' -> do

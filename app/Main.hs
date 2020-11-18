@@ -11,7 +11,7 @@ import Control.Monad
 import Control.Exception
 import System.IO
 import Data.Typeable
-import Data.Vector
+import qualified Data.Vector as V
 
 parseContactsWithEx :: FilePath -> IO [Contact]
 parseContactsWithEx path = do
@@ -31,10 +31,12 @@ parseAppointmentsWithEx path = do
             putStrLn "A problem occurred while parsing appointments. Either the file does not exist or the program does not have proper access to it. Starting with an empty appointment list."
             return []
         Right appts -> return appts
+
  
 main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
+    
     let defaultCfgPath = "docs/config.cfg" 
          
     cfgParser <- getCfgFromPath defaultCfgPath
@@ -43,7 +45,7 @@ main = do
     parsedContacts <- parseContactsWithEx $ getConfigPath  cfgParser contactsPath
     parsedAppts <- parseAppointmentsWithEx $ getConfigPath  cfgParser appointmentsPath
     
-    let db = Database {contacts = fromList parsedContacts , appointments = fromList parsedAppts , cfg = cfgParser}
+    let db = Database {contacts = V.fromList parsedContacts , appointments = V.fromList parsedAppts , cfg = cfgParser}
     
     menuLoop db
     putStrLn "Goodbye"
