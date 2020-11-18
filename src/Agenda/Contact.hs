@@ -61,7 +61,6 @@ printMatch func index contact term = do
 
 searchContactByString :: V.Vector Contact -> (Contact -> String) -> String -> IO()
 searchContactByString list func term = do
-
     let map = \ index contact -> printMatch func index contact term
     V.imapM_ map list
         

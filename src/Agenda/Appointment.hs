@@ -78,45 +78,51 @@ parseAppointments path = do
         Right appts -> return appts
         
         
-printMatch :: (Appointment -> String) -> Appointment  ->  String -> IO()
-printMatch func appt term = do
+printMatch :: (Appointment -> String) -> Int-> Appointment  ->  String -> IO()
+printMatch func index appt term = do
     let termLower = lowerString term
     let funcLower = lowerString (func appt)
     if L.isInfixOf termLower funcLower
-        then printAppointment appt
+        then do 
+            putStr $ "[id:" ++ show index ++ "]"
+            printAppointment appt
     else return ()
 
 
 
 searchApptByString :: V.Vector Appointment -> (Appointment -> String) -> String -> IO()
-searchApptByString list func term = do 
-    forM_ list $ \appt -> do
-        printMatch func appt term
+searchApptByString list func term = do
+    let map = \ index appt -> printMatch func index appt term
+    V.imapM_ map list
 
-printRangeMatch :: Appointment -> UTCTime -> UTCTime -> IO()
-printRangeMatch appt start end = do
+printRangeMatch :: Appointment -> Int -> UTCTime -> UTCTime -> IO()
+printRangeMatch appt index start end = do
     if dateIsInRange (startDate appt) start end
-        then printAppointment appt
+        then do 
+            putStr $ "[id:" ++ show index ++ "]"
+            printAppointment appt
     else return ()
 
 
 searchApptByDateRange :: V.Vector Appointment -> UTCTime -> UTCTime -> IO()
 searchApptByDateRange list start end = do
-    forM_ list $ \appt -> do
-        printRangeMatch appt start end
+    let map = \ index appt -> printRangeMatch appt index start end
+    V.imapM_ map list
 
 
 
-printDateMatch :: Appointment -> UTCTime -> IO()
-printDateMatch appt time = do
+printDateMatch :: Appointment -> Int -> UTCTime -> IO()
+printDateMatch appt index time = do
     if startDate appt == time || endDate appt == time
-        then printAppointment appt
+        then do 
+            putStr $ "[id:" ++ show index ++ "]"
+            printAppointment appt
     else return ()
 
 searchApptByExactDate :: V.Vector Appointment -> UTCTime -> IO()
 searchApptByExactDate list time = do 
-    forM_ list $ \appt -> do
-        printDateMatch appt time
+    let map = \ index appt -> printDateMatch appt index time
+    V.imapM_ map list
         
 getFirst (a,_,_) = a
 getSecond (_,a,_) = a
