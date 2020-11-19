@@ -60,12 +60,10 @@ printAppointment appt = do
     localEnd <- utcToLocal (endDate appt) 
     putStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
 
-
-printAppointmentList :: V.Vector Appointment -> IO()
-printAppointmentList list =  do 
-    putStrLn "Your appointments are:"
-    forM_ list $ \s -> do
-        printAppointment s
+printAppointmentWithIndex :: Int -> Appointment -> IO()
+printAppointmentWithIndex index appt = do
+    putStr $ "[id:" ++ show index ++ "]"
+    printAppointment appt
         
         
 parseAppointments :: FilePath -> IO([Appointment])
@@ -84,8 +82,7 @@ printMatch func index appt term = do
     let funcLower = lowerString (func appt)
     if L.isInfixOf termLower funcLower
         then do 
-            putStr $ "[id:" ++ show index ++ "]"
-            printAppointment appt
+            printAppointmentWithIndex index appt
     else return ()
 
 
@@ -99,8 +96,7 @@ printRangeMatch :: Appointment -> Int -> UTCTime -> UTCTime -> IO()
 printRangeMatch appt index start end = do
     if dateIsInRange (startDate appt) start end
         then do 
-            putStr $ "[id:" ++ show index ++ "]"
-            printAppointment appt
+            printAppointmentWithIndex index appt
     else return ()
 
 
@@ -115,8 +111,7 @@ printDateMatch :: Appointment -> Int -> UTCTime -> IO()
 printDateMatch appt index time = do
     if startDate appt == time || endDate appt == time
         then do 
-            putStr $ "[id:" ++ show index ++ "]"
-            printAppointment appt
+            printAppointmentWithIndex index appt
     else return ()
 
 searchApptByExactDate :: V.Vector Appointment -> UTCTime -> IO()
@@ -175,3 +170,8 @@ readAppointment = do
     detailsStr <- getLine
     return  Appointment { name = nameStr, details = detailsStr, startDate = utcStart, endDate = utcEnd}
     
+
+printAppointments :: V.Vector Appointment -> IO()
+printAppointments list = do
+    putStrLn "\nAppointment list:"
+    V.imapM_ printAppointmentWithIndex list   

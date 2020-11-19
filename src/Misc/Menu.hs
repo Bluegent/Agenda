@@ -132,11 +132,16 @@ removeContactMenu contacts = do
     if isValidInt line then do
         let num = stringToInt line
         if num >= 0 && num < V.length contacts then do 
-            putStrLn $ "Removing contact with index " ++ show num
-            let firstHalf = V.take num contacts :: V.Vector Contact
-            let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
-            let combined = firstHalf V.++ lastHalf
-            return combined
+            putStr $ "Are you sure you want to remove contact: "
+            printContact $ contacts V.! num
+            confirm <- getConfirmation
+            if confirm then  do
+                    let firstHalf = V.take num contacts :: V.Vector Contact
+                    let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
+                    let combined = firstHalf V.++ lastHalf
+                    putStrLn $ "Removed contact with index " ++ show num
+                    return combined
+                else return contacts   
             else do
                 putStrLn "Invalid input."
                 removeContactMenu contacts
@@ -210,18 +215,33 @@ addAppointmentMenu appointments = do
     appointment <- readAppointment
     return $ V.snoc appointments appointment
 
+
+getConfirmation :: IO Bool
+getConfirmation = do
+    putStr "y/n:"
+    line <- getLine
+    case line of
+        "y" -> return True
+        "n" -> return False
+        _ -> getConfirmation
+
 removeAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
 removeAppointmentMenu appointments = do
     putStr "Input the index of the appointment you would like to remove:"
     line <- getLine
     if isValidInt line then do
         let num = stringToInt line
-        if num >= 0 && num < V.length appointments then do 
-            putStrLn $ "Removing appointment with index " ++ show num
-            let firstHalf = V.take num appointments :: V.Vector Appointment
-            let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
-            let combined = firstHalf V.++ lastHalf
-            return combined
+        if num >= 0 && num < V.length appointments then do
+            putStr $ "Are you sure you want to remove appointment: "
+            printAppointment $ appointments V.! num
+            confirm <- getConfirmation
+            if confirm then do
+                    let firstHalf = V.take num appointments :: V.Vector Appointment
+                    let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
+                    let combined = firstHalf V.++ lastHalf
+                    putStrLn $ "Removed appointment with index " ++ show num
+                    return combined
+                else return appointments           
             else do
                 putStrLn "Invalid input."
                 removeAppointmentMenu appointments
@@ -326,6 +346,8 @@ menuLoop db = do
     putStrLn "search [a]ppointments"
     putStrLn "[m]anage agenda"
     putStrLn "[l]ist today's appointments"
+    putStrLn "list all c[o]ntacts"
+    putStrLn "list all a[p]pointments"
     putStrLn "[q]quit"
     line <- readChar
     case line of
@@ -340,6 +362,12 @@ menuLoop db = do
             menuLoop newDb
         'l' -> do 
             printToday (appointments db)
+            menuLoop db
+        'o' -> do 
+            printContacts (contacts db)
+            menuLoop db
+        'p' -> do 
+            printAppointments (appointments db)
             menuLoop db
         'q' -> exitWith ExitSuccess
         _ -> do

@@ -31,12 +31,11 @@ writeContactList path people = B.writeFile path (encode people)
 printContact :: Contact -> IO()
 printContact c =  putStrLn $ name c ++ "(tel:"++phone c ++", mail:"++ email c ++")" 
 
+printContactWithIndex :: Int -> Contact -> IO()
+printContactWithIndex index contact = do
+    putStr $ "[id:" ++ show index ++ "]"
+    printContact contact
 
-printContactList :: [Contact] -> IO()
-printContactList list = do 
-    putStrLn "Your Loaded contacts are:"
-    forM_ list $ \contact -> do
-        printContact contact
 
 parseContacts :: FilePath -> IO([Contact]) 
 parseContacts path = do
@@ -54,9 +53,7 @@ printMatch func index contact term = do
     let funcLower = lowerString (func contact)
     if L.isInfixOf termLower funcLower
         then do
-            putStr $ "[id:" ++ show index ++ "]"
-            printContact contact
-            
+           printContactWithIndex index contact           
     else return ()
 
 
@@ -93,3 +90,8 @@ readContact = do
     phoneStr <- readPhone
     mailStr <- readEmail
     return  Contact { name = nameStr, phone = phoneStr, email = mailStr}
+
+printContacts :: V.Vector Contact -> IO()
+printContacts list = do
+    putStrLn "\nContact list:"
+    V.imapM_ printContactWithIndex list
