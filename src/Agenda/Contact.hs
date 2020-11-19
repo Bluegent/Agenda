@@ -12,6 +12,7 @@ import Control.Monad
 import GHC.Generics
 import Agenda.Utils
 import Data.Char
+import Text.Regex.TDFA
 
 
 data Contact =
@@ -63,14 +64,32 @@ searchContactByString :: V.Vector Contact -> (Contact -> String) -> String -> IO
 searchContactByString list func term = do
     let map = \ index contact -> printMatch func index contact term
     V.imapM_ map list
-        
-        
+
+emailRegex = "^[a-zA-Z0-9+._-]+@[a-zA-Z0-9.-]+[a-zA-Z0-9]{2,4}$"
+phoneRegex = "^[+]{0,1}[0-9]{0,5}[\\ \\./0-9]*$"
+
+readPhone :: IO String
+readPhone = do
+    putStr "Input phone:"
+    line <- getLine
+    if line =~ phoneRegex :: Bool then return line
+    else do
+        putStrLn "Invalid phone."
+        readPhone
+
+readEmail :: IO String
+readEmail = do
+    putStr "Input e-mail:"
+    line <- getLine
+    if line =~ emailRegex :: Bool then return line
+    else do
+        putStrLn "Invalid e-mail."
+        readEmail
+
 readContact :: IO Contact
 readContact = do
     putStr "Input name:"
     nameStr <- getLine
-    putStr "Input phone number:"
-    phoneStr <- getLine
-    putStr "Input e-mail:"
-    mailStr <- getLine
+    phoneStr <- readPhone
+    mailStr <- readEmail
     return  Contact { name = nameStr, phone = phoneStr, email = mailStr}

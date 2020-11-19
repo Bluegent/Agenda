@@ -157,13 +157,11 @@ editContact contact = do
             let newContact = Contact { Agenda.Contact.name = line, phone = phone contact, email = email contact}
             editContact newContact
         'p' -> do
-            putStr "Input new phone:"
-            line <- getLine
+            line <- readPhone
             let newContact = Contact { Agenda.Contact.name = Agenda.Contact.name contact, phone = line, email = email contact}
             editContact newContact   
         'e' -> do
-            putStr "Input new e-mail:"
-            line <- getLine
+            line <- readEmail
             let newContact = Contact { Agenda.Contact.name = Agenda.Contact.name contact, phone = phone contact, email =  line}
             editContact newContact
         'd' -> return contact
