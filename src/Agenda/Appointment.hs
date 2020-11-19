@@ -150,6 +150,28 @@ parseDateMaybe str baseDate = do
                                     let localWithYear = LocalTime {localDay = day, localTimeOfDay = midnight}
                                     return localWithYear
                                 Nothing -> Nothing
-    
-
+   
+readDate :: IO UTCTime
+readDate = do
+    line <- getLine
+    current <- getCurrentTime
+    baseDate <- utcToLocal current
+    case (parseDateMaybe line baseDate) :: Maybe LocalTime of 
+        Just time -> localToUtc time
+        Nothing -> do
+            putStrLn "Invalid date"
+            readDate
+   
+readAppointment :: IO Appointment
+readAppointment = do
+    putStr "Input name:"
+    nameStr <- getLine
+    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"dd/mm/yyyy\" or \"dd/mm\"(will use current year) or \"hh:mm\"(will use current date)."
+    putStr "Enter start date:"
+    utcStart <- readDate
+    putStr "Enter end date:"
+    utcEnd <- readDate
+    putStr "Input details:"
+    detailsStr <- getLine
+    return  Appointment { name = nameStr, details = detailsStr, startDate = utcStart, endDate = utcEnd}
     

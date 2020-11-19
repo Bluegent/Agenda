@@ -29,7 +29,7 @@ searchContactByFunc db func = do
 searchContactMenu :: Database -> IO()
 searchContactMenu db = do
     printSeparator
-    putStrLn "Search by what? - [n]ame, [p]hone, [e]-mail, [q]uit"
+    putStrLn "Search by what? - [n]ame, [p]hone, [e]-mail, [b]ack"
     input <- readChar
     case input of
         'n' -> do
@@ -41,7 +41,7 @@ searchContactMenu db = do
         'e' -> do
             putStr "Input e-mail:" 
             searchContactByFunc db Agenda.Contact.email
-        'q' -> return ()
+        'b' -> return ()
         _ -> do 
             invalidChoice 
             searchContactMenu db
@@ -93,7 +93,7 @@ searchAppointmentByDateRange db = do
 searchAppointmentMenu :: Database -> IO()
 searchAppointmentMenu db = do
     printSeparator
-    putStrLn "Search by what? - [n]ame, [d]etails, [e]xact date, [r]ange of dates, [q]uit"
+    putStrLn "Search by what? - [n]ame, [d]etails, [e]xact date, [r]ange of dates, [b]ack"
     input <- readChar
     case input of
         'n' -> do
@@ -106,7 +106,7 @@ searchAppointmentMenu db = do
             searchAppointmentByExactDate db
         'r' -> do
             searchAppointmentByDateRange db
-        'q' -> return ()
+        'b' -> return ()
         _ -> do 
             invalidChoice 
             searchAppointmentMenu db
@@ -148,7 +148,7 @@ editContact :: Contact -> IO Contact
 editContact contact = do
     putStr $ "Editing contact:" 
     printContact contact
-    putStrLn "Edit options: edit [n]ame, edit [p]hone, edit [e]-mail, [d]one"
+    putStrLn "Edit options: edit [n]ame, edit [p]hone, edit [e]-mail, [b]ack"
     input <- readChar
     case input of
         'n' -> do
@@ -164,7 +164,7 @@ editContact contact = do
             line <- readEmail
             let newContact = Contact { Agenda.Contact.name = Agenda.Contact.name contact, phone = phone contact, email =  line}
             editContact newContact
-        'd' -> return contact
+        'b' -> return contact
         _ -> do 
             invalidChoice
             editContact contact
@@ -194,26 +194,118 @@ editContactMenu contacts = do
 manageContactsMenu :: V.Vector Contact -> IO (V.Vector Contact)
 manageContactsMenu contacts = do
     printSeparator
-    putStrLn "Manage contacts: [a]dd contact, [r]emove contact, [e]dit contact , [q]uit"
+    putStrLn "Manage contacts: [a]dd contact, [r]emove contact, [e]dit contact , [b]ack"
     line <- readChar
     case line of
         'a' -> addContactMenu contacts  
         'r' -> removeContactMenu contacts
         'e' -> editContactMenu contacts
-        'q' -> return contacts
+        'b' -> return contacts
         _ -> do 
             invalidChoice 
             manageContactsMenu contacts
 
+addAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
+addAppointmentMenu appointments = do
+    appointment <- readAppointment
+    return $ V.snoc appointments appointment
+
+removeAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
+removeAppointmentMenu appointments = do
+    putStr "Input the index of the appointment you would like to remove:"
+    line <- getLine
+    if isValidInt line then do
+        let num = stringToInt line
+        if num >= 0 && num < V.length appointments then do 
+            putStrLn $ "Removing appointment with index " ++ show num
+            let firstHalf = V.take num appointments :: V.Vector Appointment
+            let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
+            let combined = firstHalf V.++ lastHalf
+            return combined
+            else do
+                putStrLn "Invalid input."
+                removeAppointmentMenu appointments
+    else do
+        putStrLn "Invalid input."
+        removeAppointmentMenu appointments
+
+editAppointment :: Appointment -> IO Appointment
+editAppointment appointment = do
+    putStr $ "Editing appointment:" 
+    printAppointment appointment
+    putStrLn "Edit options: edit [n]ame, edit [d]etails, edit [s]tart date, edit [e]nd date, [b]ack"
+    input <- readChar
+    case input of
+        'n' -> do
+            putStr "Input new name:"
+            line <- getLine
+            let newAppointment = Appointment { Agenda.Appointment.name = line, details = details appointment, startDate = startDate appointment, endDate = endDate appointment}
+            editAppointment newAppointment
+        'd' -> do
+            putStr "Input new details:"
+            line <- getLine
+            let newAppointment = Appointment { Agenda.Appointment.name = Agenda.Appointment.name appointment, details = line, startDate = startDate appointment, endDate = endDate appointment}
+            editAppointment newAppointment
+        's' -> do
+            putStr "Input new start date:"
+            date <- readDate
+            let newAppointment = Appointment { Agenda.Appointment.name = Agenda.Appointment.name appointment, details = details appointment, startDate = date, endDate = endDate appointment}
+            editAppointment newAppointment
+        'e' -> do
+            putStr "Input new end date:"
+            date <- readDate
+            let newAppointment = Appointment { Agenda.Appointment.name = Agenda.Appointment.name appointment, details = details appointment, startDate = startDate appointment, endDate = date}
+            editAppointment newAppointment
+        'b' -> return appointment
+        _ -> do 
+            invalidChoice
+            editAppointment appointment
+
+editAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
+editAppointmentMenu appointments = do
+    putStr "Input the index of the appointment you would like to edit:"
+    line <- getLine
+    if isValidInt line then do
+        let num = stringToInt line
+        if num >= 0 && num < V.length appointments then do 
+            newAppointment <- editAppointment $ appointments V.! num
+            let firstHalf = V.snoc (V.take num appointments :: V.Vector Appointment) newAppointment
+            let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
+            let combined = firstHalf V.++ lastHalf
+            return combined
+            else do
+                putStrLn "Invalid input."
+                editAppointmentMenu appointments
+    else do
+        putStrLn "Invalid input."
+        editAppointmentMenu appointments
+
+manageAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
+manageAppointmentMenu appointments = do
+    printSeparator
+    putStrLn "Manage appointments: [a]dd appointment, [r]emove appointment, [e]dit appointment , [b]ack"
+    line <- readChar
+    case line of
+        'a' -> addAppointmentMenu appointments
+        'r' -> removeAppointmentMenu appointments
+        'e' -> editAppointmentMenu appointments
+        'b' -> return appointments
+        _ -> do 
+            invalidChoice 
+            manageAppointmentMenu appointments
+
 manageMenu :: Database -> IO Database
 manageMenu db = do
     printSeparator
-    putStrLn "Manage Agenda: [c]ontacts, [a]ppointments, [s]ave to file, [q]uit"
+    putStrLn "Manage Agenda: [c]ontacts, [a]ppointments, [s]ave to file, [b]ack"
     line <- readChar
     case line of
         'c' -> do
             newContacts <- manageContactsMenu $ contacts db
             manageMenu Database { contacts = newContacts , appointments = appointments db, cfg = cfg db}
+        'a' -> do
+            newAppointments <- manageAppointmentMenu $ appointments db
+            manageMenu Database { contacts = contacts db , appointments = newAppointments, cfg = cfg db}
         's' -> do
             let ctcPath = getConfigPath (cfg db) contactsPath
             let apptPath = getConfigPath  (cfg db) appointmentsPath
@@ -221,7 +313,7 @@ manageMenu db = do
             writeContactList ctcPath (contacts db)
             writeAppointmentList apptPath (appointments db)
             return db
-        'q' -> return db
+        'b' -> return db
         _ -> do 
             invalidChoice 
             manageMenu db
@@ -234,7 +326,7 @@ menuLoop db = do
     putStrLn "search [a]ppointments"
     putStrLn "[m]anage agenda"
     putStrLn "[l]ist today's appointments"
-    putStrLn "[q]uit"
+    putStrLn "[q]quit"
     line <- readChar
     case line of
         'c' -> do 
