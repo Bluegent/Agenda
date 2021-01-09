@@ -29,11 +29,11 @@ writeContactList path people = B.writeFile path (encode people)
 
 
 printContact :: Contact -> IO()
-printContact c =  putStrLn $ name c ++ "(tel:"++phone c ++", mail:"++ email c ++")" 
+printContact c =  putRecordStrLn $ name c ++ "(tel:"++phone c ++", mail:"++ email c ++")" 
 
 printContactWithIndex :: Int -> Contact -> IO()
 printContactWithIndex index contact = do
-    putStr $ "[id:" ++ show index ++ "]"
+    putRecordStr $ "[id:" ++ show index ++ "]"
     printContact contact
 
 
@@ -42,7 +42,7 @@ parseContacts path = do
     res <- (eitherDecode <$> pathToString path) :: IO (Either String [Contact])
     case res of
         Left err -> do
-            putStrLn $ "Error while parsing contacts:\"" ++ err ++"\""
+            putRecordStrLn $ "Error while parsing contacts:\"" ++ err ++"\""
             return []
         Right contacts -> return contacts
 
@@ -67,25 +67,25 @@ phoneRegex = "^[+]{0,1}[0-9]{0,5}[\\ \\./0-9]*$"
 
 readPhone :: IO String
 readPhone = do
-    putStr "Input phone:"
+    putMenuStr "Input phone:"
     line <- getLine
     if line =~ phoneRegex :: Bool then return line
     else do
-        putStrLn "Invalid phone."
+        putRecordStrLn "Invalid phone."
         readPhone
 
 readEmail :: IO String
 readEmail = do
-    putStr "Input e-mail:"
+    putMenuStr "Input e-mail:"
     line <- getLine
     if line =~ emailRegex :: Bool then return line
     else do
-        putStrLn "Invalid e-mail."
+        putMenuStrLn "Invalid e-mail."
         readEmail
 
 readContact :: IO Contact
 readContact = do
-    putStr "Input name:"
+    putRecordStr "Input name:"
     nameStr <- getLine
     phoneStr <- readPhone
     mailStr <- readEmail
@@ -93,5 +93,5 @@ readContact = do
 
 printContacts :: V.Vector Contact -> IO()
 printContacts list = do
-    putStrLn "\nContact list:"
+    putMenuStrLn "Contact list:"
     V.imapM_ printContactWithIndex list

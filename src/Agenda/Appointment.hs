@@ -58,11 +58,11 @@ printAppointment :: Appointment -> IO()
 printAppointment appt = do
     localStart <- utcToLocal (startDate appt)
     localEnd <- utcToLocal (endDate appt) 
-    putStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
+    putRecordStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
 
 printAppointmentWithIndex :: Int -> Appointment -> IO()
 printAppointmentWithIndex index appt = do
-    putStr $ "[id:" ++ show index ++ "]"
+    putRecordStr $ "[id:" ++ show index ++ "]"
     printAppointment appt
         
         
@@ -71,7 +71,7 @@ parseAppointments path = do
     res <- (eitherDecode <$> pathToString path) :: IO (Either String [Appointment])
     case res of
         Left err -> do 
-            putStrLn $ "Error while parsing appointments:\"" ++ err ++"\""
+            putRecordStrLn $ "Error while parsing appointments:\"" ++ err ++"\""
             return []
         Right appts -> return appts
         
@@ -154,24 +154,24 @@ readDate = do
     case (parseDateMaybe line baseDate) :: Maybe LocalTime of 
         Just time -> localToUtc time
         Nothing -> do
-            putStrLn "Invalid date"
+            putMenuStrLn "Invalid date"
             readDate
    
 readAppointment :: IO Appointment
 readAppointment = do
-    putStr "Input name:"
+    putMenuStr "Input name:"
     nameStr <- getLine
-    putStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"dd/mm/yyyy\" or \"dd/mm\"(will use current year) or \"hh:mm\"(will use current date)."
-    putStr "Enter start date:"
+    putRecordStrLn "Accepted date formats are \"dd/mm/yy hh:mm\" or \"dd/mm/yyyy\" or \"dd/mm\"(will use current year) or \"hh:mm\"(will use current date)."
+    putMenuStr "Enter start date:"
     utcStart <- readDate
-    putStr "Enter end date:"
+    putMenuStr "Enter end date:"
     utcEnd <- readDate
-    putStr "Input details:"
+    putMenuStr "Input details:"
     detailsStr <- getLine
     return  Appointment { name = nameStr, details = detailsStr, startDate = utcStart, endDate = utcEnd}
     
 
 printAppointments :: V.Vector Appointment -> IO()
 printAppointments list = do
-    putStrLn "\nAppointment list:"
+    putMenuStrLn "Appointment list:"
     V.imapM_ printAppointmentWithIndex list   
