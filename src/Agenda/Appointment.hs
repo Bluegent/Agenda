@@ -42,7 +42,7 @@ data Appointment =
         , startDate :: UTCTime
         , endDate :: UTCTime
         , details :: String
-        } deriving (Show,Generic)
+        } deriving (Eq,Show,Generic)
 
 instance FromJSON Appointment
 instance ToJSON Appointment
@@ -59,12 +59,6 @@ printAppointment appt = do
     localStart <- utcToLocal (startDate appt)
     localEnd <- utcToLocal (endDate appt) 
     putRecordStrLn $ name appt ++ " (" ++ show localStart ++" - "++  show localEnd ++ ") - \"" ++ details appt ++ "\""  
-
-printAppointmentWithIndex :: Int -> Appointment -> IO()
-printAppointmentWithIndex index appt = do
-    putRecordStr $ "[id:" ++ show index ++ "]"
-    printAppointment appt
-        
         
 parseAppointments :: FilePath -> IO([Appointment])
 parseAppointments path = do
@@ -76,48 +70,48 @@ parseAppointments path = do
         Right appts -> return appts
         
         
-printMatch :: (Appointment -> String) -> Int-> Appointment  ->  String -> IO()
-printMatch func index appt term = do
+printMatch :: (Appointment -> String) -> Appointment  ->  String -> IO()
+printMatch func appt term = do
     let termLower = lowerString term
     let funcLower = lowerString (func appt)
     if L.isInfixOf termLower funcLower
         then do 
-            printAppointmentWithIndex index appt
+            printAppointment appt
     else return ()
 
 
 
 searchApptByString :: V.Vector Appointment -> (Appointment -> String) -> String -> IO()
 searchApptByString list func term = do
-    let map = \ index appt -> printMatch func index appt term
-    V.imapM_ map list
+    let map = \ appt -> printMatch func appt term
+    V.mapM_ map list
 
-printRangeMatch :: Appointment -> Int -> UTCTime -> UTCTime -> IO()
-printRangeMatch appt index start end = do
+printRangeMatch :: Appointment -> UTCTime -> UTCTime -> IO()
+printRangeMatch appt start end = do
     if dateIsInRange (startDate appt) start end
         then do 
-            printAppointmentWithIndex index appt
+            printAppointment appt
     else return ()
 
 
 searchApptByDateRange :: V.Vector Appointment -> UTCTime -> UTCTime -> IO()
 searchApptByDateRange list start end = do
-    let map = \ index appt -> printRangeMatch appt index start end
-    V.imapM_ map list
+    let map = \appt -> printRangeMatch appt start end
+    V.mapM_ map list
 
 
 
-printDateMatch :: Appointment -> Int -> UTCTime -> IO()
-printDateMatch appt index time = do
+printDateMatch :: Appointment -> UTCTime -> IO()
+printDateMatch appt time = do
     if startDate appt == time || endDate appt == time
         then do 
-            printAppointmentWithIndex index appt
+            printAppointment appt
     else return ()
 
 searchApptByExactDate :: V.Vector Appointment -> UTCTime -> IO()
 searchApptByExactDate list time = do 
-    let map = \ index appt -> printDateMatch appt index time
-    V.imapM_ map list
+    let map = \ appt -> printDateMatch appt time
+    V.mapM_ map list
         
 getFirst (a,_,_) = a
 getSecond (_,a,_) = a
@@ -173,5 +167,7 @@ readAppointment = do
 
 printAppointments :: V.Vector Appointment -> IO()
 printAppointments list = do
-    putMenuStrLn "Appointment list:"
-    V.imapM_ printAppointmentWithIndex list   
+    V.mapM_ printAppointment list
+    
+searchAppointmentsByName:: String -> V.Vector Appointment -> V.Vector Appointment
+searchAppointmentsByName term list = V.filter (\a -> term == (name a) ) list

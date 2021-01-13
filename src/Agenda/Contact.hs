@@ -19,7 +19,7 @@ data Contact =
   Contact { name     :: String
           , phone    :: String
           , email    :: String
-          } deriving (Show,Generic)
+          } deriving (Eq,Show,Generic)
 
 instance FromJSON Contact
 instance ToJSON Contact
@@ -47,20 +47,20 @@ parseContacts path = do
         Right contacts -> return contacts
 
 
-printMatch :: (Contact -> String) -> Int -> Contact  ->  String -> IO()
-printMatch func index contact term = do
+printMatch :: (Contact -> String) -> Contact  ->  String -> IO()
+printMatch func contact term = do
     let termLower = lowerString term
     let funcLower = lowerString (func contact)
     if L.isInfixOf termLower funcLower
         then do
-           printContactWithIndex index contact           
+           printContact contact           
     else return ()
 
 
 searchContactByString :: V.Vector Contact -> (Contact -> String) -> String -> IO()
 searchContactByString list func term = do
-    let map = \ index contact -> printMatch func index contact term
-    V.imapM_ map list
+    let map = \ contact -> printMatch func contact term
+    V.mapM_ map list
 
 emailRegex = "^[a-zA-Z0-9+._-]+@[a-zA-Z0-9.-]+[a-zA-Z0-9]{2,4}$"
 phoneRegex = "^[+]{0,1}[0-9]{0,5}[\\ \\./0-9]*$"
@@ -87,11 +87,17 @@ readContact :: IO Contact
 readContact = do
     putRecordStr "Input name:"
     nameStr <- getLine
+    putRecordStr "Input phone:"
     phoneStr <- readPhone
+    putRecordStr "Input e-mail:"
     mailStr <- readEmail
     return  Contact { name = nameStr, phone = phoneStr, email = mailStr}
 
 printContacts :: V.Vector Contact -> IO()
 printContacts list = do
-    putMenuStrLn "Contact list:"
-    V.imapM_ printContactWithIndex list
+    V.mapM_ printContact list
+    
+    
+    
+searchContactsByName:: String -> V.Vector Contact -> V.Vector Contact
+searchContactsByName term list = V.filter (\c -> term == (name c) ) list

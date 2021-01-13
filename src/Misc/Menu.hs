@@ -7,6 +7,7 @@ import System.Exit
 import Misc.Config
 import Data.ConfigFile
 import System.Console.ANSI
+import Control.Monad
 import qualified Data.Vector as V
 
 data Database = 
@@ -98,6 +99,7 @@ searchAppointmentMenu db = do
     resetScreen
     putMenuStrLn "Search by what? - [n]ame, [d]etails, [e]xact date, [r]ange of dates, [b]ack"
     input <- readChar
+    showCursor
     case input of
         'n' -> do
             putMenuStr "Input name:" 
@@ -128,38 +130,35 @@ printToday list = do
 addContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
 addContactMenu contacts = do
     resetScreen
+    showCursor
     contact <- readContact
     return $ V.snoc contacts contact
 
 removeContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
 removeContactMenu contacts = do
     resetScreen
-    putMenuStr "Input the index of the contact you would like to remove:"
+    showCursor
+    putMenuStr "Input the exact name of the contact you wish to remove:"
     line <- getLine
-    if isValidInt line then do
-        let num = stringToInt line
-        if num >= 0 && num < V.length contacts then do 
-            putMenuStr $ "Are you sure you want to remove contact: "
-            printContact $ contacts V.! num
-            confirm <- getConfirmation
-            if confirm then  do
-                    let firstHalf = V.take num contacts :: V.Vector Contact
-                    let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
-                    let combined = firstHalf V.++ lastHalf
-                    putMenuStrLn $ "Removed contact with index " ++ show num
-                    return combined
-                else return contacts   
-            else do
-                putMenuStrLn "Invalid input."
-                removeContactMenu contacts
+    let found = searchContactsByName line contacts
+    if length found == 0 then do
+        putMenuStrLn "No contacts found with that name."
+        waitForUserRead
+        return contacts
     else do
-        putMenuStrLn "Invalid input."
-        removeContactMenu contacts
+        putMenuStrLn "Are you sure you want to delete the following contact(s):\n"
+        printContacts found
+        confirmation <- getConfirmation
+        if confirmation then do
+            putMenuStrLn $ "Deleting " ++ (show (length found)) ++ " contact(s)..."
+            waitForUserRead
+            return (removeAll contacts found)
+        else return contacts
 
 editContact :: Contact -> IO Contact
 editContact contact = do
     resetScreen
-    putMenuStr $ "Editing contact:" 
+    putMenuStrLn "Editing contact:" 
     printContact contact
     putMenuStrLn "Edit options: edit [n]ame, edit [p]hone, edit [e]-mail, [b]ack"
     input <- readChar
@@ -183,27 +182,23 @@ editContact contact = do
             editContact contact
 
 
-
 editContactMenu :: V.Vector Contact -> IO (V.Vector Contact)
 editContactMenu contacts = do
     resetScreen
-    putMenuStr "Input the index of the contact you would like to edit:"
+    showCursor
+    putMenuStr "Input the exact name of the contact you would like to edit:"
     line <- getLine
-    if isValidInt line then do
-        let num = stringToInt line
-        if num >= 0 && num < V.length contacts then do 
-            newContact <- editContact $ contacts V.! num
-            let firstHalf = V.snoc (V.take num contacts :: V.Vector Contact) newContact
-            let lastHalf = V.drop (num+1) contacts :: V.Vector Contact
-            let combined = firstHalf V.++ lastHalf
-            return combined
-            else do
-                putMenuStrLn "Invalid input."
-                editContactMenu contacts
+    let found = searchContactsByName line contacts
+    
+    if length found == 0 then do
+        putMenuStrLn "No contacts found with that name."
+        waitForUserRead
+        return contacts
     else do
-        putMenuStrLn "Invalid input."
-        editContactMenu contacts
-
+        when(length found > 1) $ putMenuStrLn "Multiple contacts found with that name, editing the first one."
+        newContact <- editContact (found V.! 0)
+        let remaining = removeElem contacts (found V.! 0)
+        return (V.snoc remaining newContact)
 
 manageContactsMenu :: V.Vector Contact -> IO (V.Vector Contact)
 manageContactsMenu contacts = do
@@ -238,32 +233,28 @@ getConfirmation = do
 removeAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
 removeAppointmentMenu appointments = do
     resetScreen
-    putMenuStr "Input the index of the appointment you would like to remove:"
+    showCursor
+    putMenuStr "Input the exact name of the appointment you wish to remove:"
     line <- getLine
-    if isValidInt line then do
-        let num = stringToInt line
-        if num >= 0 && num < V.length appointments then do
-            putMenuStr $ "Are you sure you want to remove appointment: "
-            printAppointment $ appointments V.! num
-            confirm <- getConfirmation
-            if confirm then do
-                    let firstHalf = V.take num appointments :: V.Vector Appointment
-                    let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
-                    let combined = firstHalf V.++ lastHalf
-                    putMenuStrLn $ "Removed appointment with index " ++ show num
-                    return combined
-                else return appointments           
-            else do
-                putMenuStrLn "Invalid input."
-                removeAppointmentMenu appointments
+    let found = searchAppointmentsByName line appointments
+    if length found == 0 then do
+        putMenuStrLn "No appointments found with that name."
+        waitForUserRead
+        return appointments
     else do
-        putMenuStrLn "Invalid input."
-        removeAppointmentMenu appointments
+        putMenuStrLn "Are you sure you want to delete the following appointments(s):\n"
+        printAppointments found
+        confirmation <- getConfirmation
+        if confirmation then do
+            putMenuStrLn $ "Deleting " ++ (show (length found)) ++ " appointment(s)..."
+            waitForUserRead
+            return (removeAll appointments found)
+        else return appointments
 
 editAppointment :: Appointment -> IO Appointment
 editAppointment appointment = do
     resetScreen
-    putMenuStr $ "Editing appointment:" 
+    putMenuStrLn "Editing appointment:" 
     printAppointment appointment
     putMenuStrLn "Edit options: edit [n]ame, edit [d]etails, edit [s]tart date, edit [e]nd date, [b]ack"
     input <- readChar
@@ -296,22 +287,20 @@ editAppointment appointment = do
 editAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
 editAppointmentMenu appointments = do
     resetScreen
-    putMenuStr "Input the index of the appointment you would like to edit:"
+    showCursor
+    putMenuStr "Input the exact name of the appointment you would like to edit:"
     line <- getLine
-    if isValidInt line then do
-        let num = stringToInt line
-        if num >= 0 && num < V.length appointments then do 
-            newAppointment <- editAppointment $ appointments V.! num
-            let firstHalf = V.snoc (V.take num appointments :: V.Vector Appointment) newAppointment
-            let lastHalf = V.drop (num+1) appointments :: V.Vector Appointment
-            let combined = firstHalf V.++ lastHalf
-            return combined
-            else do
-                putMenuStrLn "Invalid input."
-                editAppointmentMenu appointments
+    let found = searchAppointmentsByName line appointments
+    
+    if length found == 0 then do
+        putMenuStrLn "No appointments found with that name."
+        waitForUserRead
+        return appointments
     else do
-        putMenuStrLn "Invalid input."
-        editAppointmentMenu appointments
+        when(length found > 1) $ putMenuStrLn "Multiple appointments found with that name, editing the first one."
+        newAppointment <- editAppointment $ found V.! 0
+        let remaining = removeElem appointments (found V.! 0)
+        return (V.snoc remaining newAppointment)
 
 manageAppointmentMenu :: V.Vector Appointment -> IO (V.Vector Appointment)
 manageAppointmentMenu appointments = do
@@ -355,7 +344,7 @@ manageMenu db = do
 menuLoop :: Database -> IO()
 menuLoop db = do
     resetScreen
-    putMenuStrLn "What would you like to do?"
+    putStrLnCursor (menuCol - 5) "What would you like to do?"
     putMenuStrLn "search [c]ontacts"
     putMenuStrLn "search [a]ppointments"
     putMenuStrLn "[m]anage agenda"

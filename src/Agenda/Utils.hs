@@ -6,6 +6,7 @@ import Foreign.C.Types
 import Text.Read
 import Data.Maybe
 import System.Console.ANSI
+import Data.Vector as V
 
 -- import as B to avoid name clash between Prelude's ByteString and Data.ByteString
 import qualified Data.ByteString.Lazy as B
@@ -64,6 +65,7 @@ putMenuStrLn str = do
     
 resetScreen = do
     clearScreen
+    hideCursor
     setCursorPosition 0 menuCol
 
 waitForUserRead:: IO() 
@@ -71,3 +73,10 @@ waitForUserRead = do
     putMenuStrLn "Press any key to continue"
     line <- readChar
     return()
+
+
+removeElem:: Eq a => V.Vector a -> a -> V.Vector a
+removeElem list remove = V.filter (\x -> x /= remove) list
+    
+removeAll:: Eq a => V.Vector a -> V.Vector a -> V.Vector a
+removeAll list remove = V.filter (\x -> not (V.elem x remove)) list
